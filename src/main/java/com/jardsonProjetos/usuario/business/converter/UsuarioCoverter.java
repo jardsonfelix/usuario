@@ -6,7 +6,6 @@ import com.jardsonProjetos.usuario.business.dto.UsuarioDTO;
 import com.jardsonProjetos.usuario.infrastructure.entity.Endereco;
 import com.jardsonProjetos.usuario.infrastructure.entity.Telefone;
 import com.jardsonProjetos.usuario.infrastructure.entity.Usuario;
-import lombok.*;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -96,6 +95,17 @@ public class UsuarioCoverter {
                 .ddd(telefoneDTO.getDdd())
                 .build();
 
+    }
+
+    public Usuario updateUsuario(UsuarioDTO usuarioDTO, Usuario entity){
+        return Usuario.builder()
+                .nome(usuarioDTO.getNome() != null ? usuarioDTO.getNome() : entity.getNome())
+                .id(entity.getId())
+                .senha(usuarioDTO.getSenha() != null ? usuarioDTO.getSenha() : entity.getSenha())
+                .email(usuarioDTO.getEmail() != null ? usuarioDTO.getEmail() : entity.getEmail())
+                .enderecos(entity.getEnderecos())
+                .telefones(entity.getTelefones())
+                .build();
     }
 
 }

@@ -6,6 +6,7 @@ import com.jardsonProjetos.usuario.infrastructure.entity.Usuario;
 import com.jardsonProjetos.usuario.infrastructure.exceptions.ConflictException;
 import com.jardsonProjetos.usuario.infrastructure.exceptions.ResourceNotFoundException;
 import com.jardsonProjetos.usuario.infrastructure.repository.UsuarioRepository;
+import com.jardsonProjetos.usuario.infrastructure.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final UsuarioCoverter usuarioCoverter;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     public UsuarioDTO salvarUsuario(UsuarioDTO usuarioDTO) {
         emailExiste(usuarioDTO.getEmail());
@@ -48,5 +50,18 @@ public class UsuarioService {
     public void deletaUsuarioPorEmail(String email){
         usuarioRepository.deleteByEmail(email);
 
+    }
+
+    public UsuarioDTO atualizadoDadosUsuario(String token, UsuarioDTO dto){
+       //buscou email do usuário pelo token para tirar a obrigatoriedade do email
+        String email = jwtUtil.extrairEmailToken(token.substring(7));
+      dto.setSenha(dto.getSenha() != null ? passwordEncoder.encode(dto.getSenha() ): null);
+        //buscou os dados do usuario no banco de dados
+       Usuario usarioEntity = usuarioRepository.findByEmail(email).orElseThrow(()->
+               //mesclou os dados  que recebemos na requisição DTO com os dados do banco de dados
+               new ResourceNotFoundException("Email não localizado "));
+       Usuario usuario =usuarioCoverter.updateUsuario(dto, usarioEntity);
+        //salvou os dados do usuário convertido e depois pegou e converteu para UsuárioDTO
+       return usuarioCoverter.paraUsuarioDTO(usuarioRepository.save(usuario));
     }
 }
